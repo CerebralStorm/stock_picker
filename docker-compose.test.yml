@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      APP_DOMAIN: web
+      GERGICH_KEY: "${GERGICH_KEY}"
+      GERRIT_PROJECT: "${GERRIT_PROJECT}"
+      GERRIT_HOST: "${GERRIT_HOST}"
+      GERRIT_BRANCH: "${GERRIT_BRANCH}"
+      DB_USERNAME: postgres
+      DB_PASSWORD: stock_picker_postgres_password
+      DB_ADDRESS: postgres
+    links:
+      - postgres
+    volumes:
+      - '.git:/usr/src/app/.git'
+      - "coverage:/usr/src/app/coverage"
+
+  postgres:
+    image: postgres:10.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: stock_picker_postgres_password
+
+volumes:
+  coverage: {}

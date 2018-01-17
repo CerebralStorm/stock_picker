@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set +e
+EXIT_CODES=0
+
+# Allow time for postgres to start
+for i in {1..6}; do
+  bundle exec rake db:create && break
+  test $i -eq 6 && echo 'Failed to db:create' && exit 1
+  sleep 1
+done
+
+bundle exec rake db:migrate
+
+echo 'Checking last migration is reversible'
+bundle exec rake db:migrate:redo
+EXIT_CODES=$(($EXIT_CODES + $?))
+
+echo "Checking securtiy issues with brakeman"
+bundle exec gergich capture brakeman "bundle exec brakeman --quiet --format json --exit-on-warn"
+EXIT_CODES=$(($EXIT_CODES + $?))
+
+echo "Analyzing ruby code with rubocop"
+bundle exec gergich capture rubocop "bundle exec rubocop --fail-level autocorrect"
+EXIT_CODES=$(($EXIT_CODES + $?))
+
+echo "Analyzing js with eslint"
+bundle exec gergich capture eslint "bundle exec rake eslint:run[app]"
+EXIT_CODES=$(($EXIT_CODES + $?))
+
+echo 'Running ruby specs'
+bundle exec rspec
+EXIT_CODES=$(($EXIT_CODES + $?))
+
+echo 'Running JS specs...'
+npm run test
+EXIT_CODES=$(($EXIT_CODES + $?))
+
+bundle exec gergich publish
+exit $EXIT_CODES

@@ -1,0 +1,16 @@
+AllCops:
+  Exclude:
+    - 'db/schema.rb'
+    - 'config/development-local.rb'
+    - 'bin/**/*'
+Metrics/LineLength:
+  Max: 120
+Style/Documentation:
+  Enabled: false
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/SymbolArray:
+  Enabled: false
